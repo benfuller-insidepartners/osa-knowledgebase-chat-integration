@@ -15,7 +15,14 @@ POST https://onestepafter.app.n8n.cloud/webhook/chat
 
 **Content-Type:** `application/json`
 
-No API key or authentication header is required — the webhook is open. CORS is set to allow all origins (`*`). If we want to lock this down later, we can restrict to specific domains in the n8n workflow.
+
+**Authentication:** API key via header
+
+| Header | Value |
+|--------|-------|
+| `x-api-key` | `<api key>` |
+
+Requests without a valid API key will receive a `401 Unauthorized` response. Keep this key secret — only store it in Bubble's API Connector configuration, never in client-side code.
 
 ---
 
@@ -94,8 +101,17 @@ No API key or authentication header is required — the webhook is open. CORS is
 | `sourceDocs` | array | Documents referenced in the answer (only when `contextSource` is `"internal_docs"`). Each has `title` and `docId`. |
 | `usage` | object | Token usage from Claude. Useful for monitoring costs. |
 
-### Error (HTTP 400)
+### Error Responses
 
+**401 Unauthorized** — missing or invalid API key:
+```json
+{
+  "error": "Unauthorized",
+  "status": 401
+}
+```
+
+**400 Bad Request** — missing message:
 ```json
 {
   "error": "Message is required",
@@ -191,6 +207,7 @@ The AI understands "What about California?" refers to probate thresholds because
    - **URL:** `https://onestepafter.app.n8n.cloud/webhook/chat`
    - **Headers:**
      - `Content-Type`: `application/json`
+     - `x-api-key`: `<api key>`
    - **Body type:** JSON
    - **Body (use as template, mark fields as dynamic):**
 
@@ -280,6 +297,7 @@ Currently there are no rate limits enforced at the webhook level. For production
 ```bash
 curl -X POST "https://onestepafter.app.n8n.cloud/webhook/chat" \
   -H "Content-Type: application/json" \
+  -H "x-api-key: <api key>" \
   -d '{
     "message": "What is an executor responsible for?",
     "sessionId": "test_001",
@@ -340,4 +358,4 @@ n8n Cloud (webhook)
 
 ## Contact
 
-For questions about the API behavior, system prompt changes, or adding new documents to the knowledge base, contact Inside Partners at hello@insidepartners.ai
+For questions about the API behavior, system prompt changes, or adding new documents to the knowledge base, contact Inside Partners at hello@insidepartners.ai.
