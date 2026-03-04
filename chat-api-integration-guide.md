@@ -340,4 +340,4 @@ n8n Cloud (webhook)
 
 ## Contact
 
-For questions about the API behavior, system prompt changes, or adding new documents to the knowledge base, contact [your name/email here].
+For questions about the API behavior, system prompt changes, or adding new documents to the knowledge base, contact Inside Partners at hello@insidepartners.ai
