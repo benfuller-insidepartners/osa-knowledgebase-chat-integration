@@ -661,10 +661,10 @@ Every API key is hardcoded in Code nodes (n8n Cloud doesn't reliably support `$e
 
 - **API keys in code:** All keys are embedded in n8n Code nodes. Anyone with access to the n8n workspace can see them. Limit n8n access to trusted team members only.
 - **Webhook API key:** The `osa_` key protects the webhook chat endpoint. Rotate it periodically and if you suspect exposure.
-- **Webchat widget:** The webchat workflow has no API key protection. Use `allowedOrigins` to restrict which domains can embed it.
+- **Webchat widget:** Use `allowedOrigins` to restrict which domains can embed it.
 - **Zilliz API key:** Provides full read/write access to the vector database. If compromised, rotate it in the Zilliz dashboard and update all three workflows.
 - **Google Drive OAuth2:** Managed through n8n's credential system (encrypted at rest). The OAuth token has access to the connected Google account's Drive.
-- **CORS:** Both chat workflows currently allow all origins (`*`). For production, restrict to your specific domains.
+- **CORS:** Both chat workflows currently allow all origins (`*`). For production, restricted to your specific domains.
 - **Data in transit:** All API calls use HTTPS. Data at rest in Zilliz is encrypted by the provider.
 
 ---
