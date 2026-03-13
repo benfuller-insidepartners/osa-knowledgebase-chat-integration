@@ -28,7 +28,7 @@ There are three n8n Cloud workflows that make up the system:
 
 | Workflow | Purpose | Trigger |
 |----------|---------|---------|
-| **RAG Ingestion** | Reads documents from Google Drive, chunks them, generates vector embeddings, and stores them in the Zilliz database | Manual execution or automatic (new/updated files) |
+| **RAG Ingestion** | Reads documents from Google Drive, chunks them, generates vector embeddings, and stores them in the Zilliz database | Scheduled weekly (Mondays at 2:00 PM) or manual execution |
 | **RAG Chat — Webhook** | The API that the Bubble app calls. Accepts a question, retrieves relevant docs, and returns a structured JSON response | HTTP POST to webhook URL |
 | **RAG Chat — Webchat** | A standalone chat widget that can be embedded on any webpage with a JavaScript snippet | User interaction with the chat widget |
 
@@ -114,11 +114,9 @@ All API keys are hardcoded directly in the n8n workflow Code nodes (not in envir
 
 There are two ways documents get ingested:
 
-**Manual (bulk load):** Click "Execute Workflow" in n8n. This scans the entire Google Drive shared folder, processes every supported document, and loads/refreshes them all in Zilliz. Use this for the initial load or when you want to refresh everything.
+**Scheduled (weekly):** The workflow runs automatically every Monday at 2:00 PM. It scans the entire Google Drive shared folder, processes every supported document, and loads/refreshes them all in Zilliz. This catches any new files, updates, or changes made during the week. The workflow must be toggled to "Active" in n8n for the schedule to run.
 
-**Automatic (new/updated files):** Two trigger nodes poll Google Drive every minute for new or modified files. When detected, they automatically process just that file. These triggers must be activated by toggling the workflow to "Active" in n8n.
-
-Note: The automatic triggers use `$env.GDRIVE_FOLDER_ID` which needs to be set in n8n Cloud's environment variables, or you can replace it with the folder ID directly in the trigger node settings.
+**Manual (on-demand):** Click "Execute Workflow" in n8n at any time. This performs the same full scan and is useful when you've just added documents and don't want to wait until Monday.
 
 ### Supported File Types
 
@@ -135,7 +133,9 @@ Files that don't match these types (images, videos, folders) are silently skippe
 ### Node-by-Node Walkthrough
 
 ```
-Manual Trigger
+Manual Trigger ──────────┐
+                         ├─→ Search files and folders2
+Schedule Trigger ────────┘     (Mondays at 2:00 PM)
   └─ Search files and folders2
        Finds all subfolders in the Shared Drive root folder
        └─ Search files and folders3
@@ -418,13 +418,13 @@ curl -X POST "<ZILLIZ_ENDPOINT — shared separately>/v2/vectordb/entities/query
 
 1. Add the document to any subfolder within the Shared Drive root folder (`<GDRIVE_FOLDER_ID — shared separately>`)
 2. Supported formats: Google Doc, DOCX, XLSX, PDF
-3. If the ingestion workflow is active (auto triggers enabled), it will be picked up within a minute
-4. Otherwise, run the ingestion workflow manually — it will process all documents including the new one
+3. The document will be automatically picked up on the next scheduled run (Mondays at 2:00 PM)
+4. If you need it ingested sooner, run the ingestion workflow manually by clicking "Execute Workflow" in n8n
 
 ### Updating an Existing Document
 
 1. Edit the document in Google Drive
-2. The "Watch Updated Files" trigger will detect the change (if active), or run the workflow manually
+2. The changes will be picked up on the next scheduled run (Mondays at 2:00 PM), or run the workflow manually
 3. The workflow automatically deletes old chunks for that document before re-inserting, so you won't get duplicates
 
 ### Removing a Document
@@ -609,7 +609,6 @@ Search for the old key across all Code nodes in all three workflows. The keys ap
 
 1. Open the ingestion workflow
 2. Edit "Search files and folders2" — change the folder URL/ID
-3. If using auto triggers, also update "Watch New Files1" and "Watch Updated Files1" with the new folder ID
 
 ### Restrict Webchat to Specific Domains
 
